@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🛡️ CyberSure MSME
+# 🛡️ VyaparShield
 
 ### Affordable, consent-gated cybersecurity health checks for Indian small businesses
 
@@ -20,7 +20,7 @@
 
 ## 🌟 Theme
 
-**CyberSure MSME** is built around a simple idea: cybersecurity should feel like a practical business health check—not an intimidating technical audit.
+**VyaparShield** is built around a simple idea: cybersecurity should feel like a practical business health check—not an intimidating technical audit.
 
 The experience is calm, trustworthy, and accessible. It guides an MSME owner from *“I do not know whether my website is secure”* to *“Here are the most important safe fixes my developer can make today.”*
 
@@ -34,18 +34,18 @@ Indian MSMEs are rapidly adopting websites, payment links, cloud services, and d
 2. **What matters most to my business?**
 3. **What can I fix today?**
 
-Existing tools often produce difficult technical alerts, while full assessments can be expensive and may be inappropriate without explicit target ownership. CyberSure addresses this gap through verified ownership, explicit consent, low-impact assessment, multilingual explanations, and developer-ready remediation.
+Existing tools often produce difficult technical alerts, while full assessments can be expensive and may be inappropriate without explicit target ownership. VyaparShield addresses this gap through verified ownership, explicit consent, low-impact assessment, multilingual explanations, and developer-ready remediation.
 
 ## 💡 Our solution
 
-CyberSure MSME is a web platform that assesses only assets a business has verified as its own. It checks safe website-posture signals, turns them into a prioritised security score, and presents each result in two linked views:
+VyaparShield is a web platform that assesses only assets a business has verified as its own. It checks safe website-posture signals, turns them into a prioritised security score, and presents each result in two linked views:
 
 | Business-owner view | Developer view |
 |---|---|
 | Plain-language impact in English, Hindi, or Hinglish | Evidence, affected control, remediation guidance, and retest status |
 | “Customer login sessions may be exposed on unsafe Wi‑Fi.” | “Add the `Secure` attribute to authentication cookies.” |
 
-It is **not** an autonomous penetration-testing, exploitation, brute-force, or third-party scanning platform.
+VyaparShield is **not** an autonomous penetration-testing, exploitation, brute-force, or third-party scanning platform.
 
 ## 🧭 Objectives
 
@@ -71,7 +71,7 @@ It is **not** an autonomous penetration-testing, exploitation, brute-force, or t
 | 📄 **Report data** | Provides structured executive and technical report data. |
 | 🧾 **Audit trail** | Records verification, consent, and scan-queue events. |
 
-## 🔄 How CyberSure works
+## 🔄 How VyaparShield works
 
 ```mermaid
 flowchart LR
@@ -110,7 +110,7 @@ The public web application **never directly scans a URL**. It only creates a dur
 
 ## 🛡️ Responsible security
 
-CyberSure is intentionally restricted to defensive, consented posture assessment.
+VyaparShield is intentionally restricted to defensive, consented posture assessment.
 
 ### We allow
 
@@ -211,8 +211,8 @@ erDiagram
 ### 1. Clone and install
 
 ```bash
-git clone <your-repository-url>
-cd competiton
+git clone https://github.com/ANASINGARAJUTANMAYEE/VyaparShield.git
+cd VyaparShield
 npm install
 ```
 
@@ -227,7 +227,7 @@ cp .env.example .env.local
 Set the following values in `.env.local`:
 
 ```env
-NEXT_PUBLIC_APP_NAME=CyberSure MSME
+NEXT_PUBLIC_APP_NAME=VyaparShield
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_publishable_key
 SUPABASE_SERVICE_ROLE_KEY=server_only_worker_key
@@ -335,8 +335,6 @@ To operate with real business data, the project still needs a configured Supabas
 
 Built with care for safer digital growth of Indian MSMEs. 🇮🇳
 
-**CyberSure MSME — Secure today. Grow confidently tomorrow.**
+**VyaparShield — Secure today. Grow confidently tomorrow.**
 
 </div>
-#   V y a p a r S h i e l d  
- 
