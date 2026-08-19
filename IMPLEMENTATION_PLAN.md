@@ -1,4 +1,4 @@
-# CyberSure MSME — Implementation Plan
+# Vyapar Shield — Implementation Plan
 
 ## 1. MVP outcome
 
@@ -11,7 +11,7 @@ The MVP deliberately performs no exploitation, brute forcing, broad discovery, o
 1. User creates an account and business profile.
 2. User registers one HTTPS target URL.
 3. Platform generates a one-time verification token.
-4. User proves ownership using either a DNS TXT record or a file at `/.well-known/cybersure-verification.txt`.
+4. User proves ownership using either a DNS TXT record or a file at `/.well-known/Vyapar Shield-verification.txt`.
 5. User reviews the scan scope and accepts explicit consent.
 6. Platform runs low-impact checks against the verified host.
 7. Findings are normalised, risk-scored, and translated into owner and developer views.
@@ -183,3 +183,4 @@ Use plain language by default. Hindi/Hinglish can be delivered through a curated
 ## 12. Definition of done
 
 The MVP is ready when it demonstrably verifies target ownership, requires consent, safely scans only the verified demo target, presents at least five useful normalised checks, explains each finding in owner and developer language, compares a re-scan, and produces an exportable report.
+

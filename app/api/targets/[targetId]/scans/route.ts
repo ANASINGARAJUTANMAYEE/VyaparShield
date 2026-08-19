@@ -35,6 +35,16 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
     .maybeSingle();
   if (consentError) return databaseError(consentError.message);
   if (!consent) return NextResponse.json({ error: "Current scan consent is required." }, { status: 409 });
+  // LOOP-2 fix: prevent scan flooding — reject if an active scan already exists.
+  const { data: activeScan, error: activeScanError } = await result.supabase
+    .from("scans")
+    .select("id, status")
+    .eq("target_id", targetId)
+    .in("status", ["queued", "running"])
+    .limit(1)
+    .maybeSingle();
+  if (activeScanError) return databaseError(activeScanError.message);
+  if (activeScan) return NextResponse.json({ error: "A scan is already in progress for this target. Please wait for it to complete before requesting another.", activeScandId: activeScan.id }, { status: 429 });
   const { data: scan, error } = await result.supabase.from("scans").insert({
     target_id: targetId,
     requested_by: result.user.id,

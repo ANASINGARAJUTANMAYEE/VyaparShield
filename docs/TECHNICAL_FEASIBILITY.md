@@ -1,14 +1,14 @@
-# CyberSure MSME — Technical feasibility study
+# Vyapar Shield — Technical feasibility study
 
 ## Problem and solution
 
 Indian MSMEs increasingly use websites, payment links, cloud tools, and customer records, but rarely have a dedicated security analyst. Professional assessments are often costly; raw scanner outputs are difficult for owners to understand.
 
-CyberSure MSME is a consent-gated health-check platform. It verifies target ownership before assessment, performs only low-impact checks, and converts technical signals into prioritised owner and developer actions in English, Hindi, or Hinglish.
+Vyapar Shield is a consent-gated health-check platform. It verifies target ownership before assessment, performs only low-impact checks, and converts technical signals into prioritised owner and developer actions in English, Hindi, or Hinglish.
 
 ## Target users
 
-| User | Need | CyberSure outcome |
+| User | Need | Vyapar Shield outcome |
 |---|---|---|
 | MSME owner | A clear, affordable answer | Score, business impact, first fixes, effort estimate |
 | Freelancer/developer | Reliable technical evidence | Affected evidence, remediation, retest status |
@@ -65,3 +65,4 @@ Start at 100. Deduct Critical 25, High 15, Medium 8, Low 3, and Info 0 for unres
 The product is feasible as a hackathon MVP because the business value comes from verified assessment workflow, understandable remediation, evidence, and re-scan—not from intrusive testing. The current implementation already includes the database schema, API layer, auth/session boundary, safe job queue, worker contract, score calculation, and a no-network fixture executor for a reliable demo.
 
 Before a real deployment, provision Supabase, run both migrations, host the worker separately, and connect only an egress-controlled executor.
+

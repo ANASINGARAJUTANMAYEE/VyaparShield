@@ -16,6 +16,8 @@ export type WorkerFinding = {
   evidence: Record<string, string | number | boolean>;
   ownerExplanation: { English: string; Hindi: string; Hinglish: string };
   developerGuidance: string;
+  /** Estimated remediation effort — surfaced in the dashboard finding list. */
+  effort?: "5 min" | "15 min" | "30 min" | "1–2 hrs";
 };
 
 export type IsolatedScanExecutor = {

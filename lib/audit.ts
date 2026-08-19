@@ -8,5 +8,8 @@ export async function audit(client: SupabaseClient, values: { actorId: string; b
     event_type: values.eventType,
     metadata: values.metadata ?? {},
   });
-  if (error) console.error("Unable to write audit event", error.message);
+  if (error) {
+    console.error("Unable to write audit event", error.message);
+    throw new Error(`audit_write_failed: ${error.message}`);
+  }
 }

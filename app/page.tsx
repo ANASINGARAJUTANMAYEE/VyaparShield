@@ -1,167 +1,246 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { calculateScore, sampleFindings, scoreLabel, severityCount } from "../lib/assessment";
-import type { Finding, Language, Severity, TargetState } from "../lib/types";
+import Link from "next/link";
+import TopBar from "./components/TopBar";
+import Footer from "./components/Footer";
 
-const severityOrder: Severity[] = ["High", "Medium", "Low"];
-const initialTarget: TargetState = {
-  url: "https://store.cybersure-demo.in",
-  hostname: "store.cybersure-demo.in",
-  token: "",
-  verified: false,
-  consented: false,
-};
-
-export default function Home() {
-  const [target, setTarget] = useState<TargetState>(initialTarget);
-  const [findings, setFindings] = useState<Finding[]>(sampleFindings);
-  const [language, setLanguage] = useState<Language>("English");
-  const [scanState, setScanState] = useState<"idle" | "running" | "complete">("idle");
-  const [activeFinding, setActiveFinding] = useState<string>(sampleFindings[0].id);
-  const [notice, setNotice] = useState<string>("");
-  const score = useMemo(() => calculateScore(findings), [findings]);
-  const selected = findings.find((finding) => finding.id === activeFinding) ?? findings[0];
-
-  async function generateVerification() {
-    try {
-      const response = await fetch("/api/targets/validate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: target.url }),
-      });
-      const validation = await response.json() as { valid: boolean; hostname?: string; reason?: string };
-      if (!validation.valid || !validation.hostname) {
-        setNotice(validation.reason ?? "Use a public HTTPS domain. Local and private addresses are blocked.");
-        return;
-      }
-      const token = `cybersure-verify=${crypto.randomUUID().slice(0, 12)}`;
-      setTarget({ ...target, hostname: validation.hostname, token, verified: false, consented: false });
-      setNotice("Verification token generated. Add it to DNS or your .well-known file, then confirm below.");
-    } catch {
-      setNotice("Could not validate the target. Ensure the local app server is running, then try again.");
-    }
-  }
-
-  function confirmVerification() {
-    if (!target.token) {
-      setNotice("Generate a verification token first.");
-      return;
-    }
-    setTarget({ ...target, verified: true });
-    setNotice(`${target.hostname} is verified for this guided demo.`);
-  }
-
-  function runScan() {
-    if (!target.verified || !target.consented) {
-      setNotice("Verify target ownership and accept the scan scope before starting a scan.");
-      return;
-    }
-    setScanState("running");
-    setNotice("Running low-impact checks: TLS, headers, cookies, and page resources…");
-    window.setTimeout(() => {
-      setScanState("complete");
-      setNotice("Assessment complete. Review the prioritised fixes below.");
-    }, 1250);
-  }
-
-  function updateFinding(id: string) {
-    setFindings((current) => current.map((finding) => finding.id === id ? { ...finding, status: finding.status === "Open" ? "Fixed" : "Open" } : finding));
-  }
-
-  function exportReport() {
-    const open = findings.filter((finding) => finding.status === "Open");
-    const lines = [
-      "# CyberSure MSME — Security Health Check",
-      "",
-      `Target: ${target.hostname || "Not verified"}`,
-      `Score: ${score}/100 (${scoreLabel(score)})`,
-      `Generated: ${new Date().toLocaleString()}`,
-      "",
-      "## Fix first",
-      ...open.map((finding) => `- **${finding.severity}: ${finding.title}** — ${finding.owner["English"]} Developer action: ${finding.developer}`),
-      "",
-      "## Assessment scope",
-      "This report covers consented, low-impact checks only. It is not a penetration test or compliance certification.",
-    ];
-    const blob = new Blob([lines.join("\n")], { type: "text/markdown;charset=utf-8" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `cybersure-report-${target.hostname || "draft"}.md`;
-    link.click();
-    URL.revokeObjectURL(link.href);
-  }
+/* ── Mini score widget that mirrors the Stitch hero preview ── */
+function HeroScoreWidget() {
+  const score = 61;
+  const radius = 45;
+  const circumference = 2 * Math.PI * radius; // ≈ 282.7
+  const offset = circumference * (1 - score / 100); // ≈ 110.2
 
   return (
-    <main>
-      <header className="topbar">
-        <a className="brand" href="#top" aria-label="CyberSure home"><span className="brand-mark">◈</span> CyberSure <em>MSME</em></a>
-        <div className="header-actions">
-          <span className="safe-chip">● Consent-gated scans</span>
-          <button className="text-button" onClick={exportReport} disabled={scanState !== "complete"}>Download report</button>
-        </div>
-      </header>
-
-      <section className="hero" id="top">
-        <div>
-          <p className="eyebrow">Affordable security assessment for small businesses</p>
-          <h1>Know what is exposed.<br /><span>Fix what matters first.</span></h1>
-          <p className="hero-copy">CyberSure turns website security signals into a clear action plan for business owners and developers.</p>
-        </div>
-        <div className="language-toggle" aria-label="Report language">
-          {(["English", "Hindi", "Hinglish"] as Language[]).map((option) => <button key={option} className={language === option ? "selected" : ""} onClick={() => setLanguage(option)}>{option}</button>)}
-        </div>
-      </section>
-
-      <section className="steps" aria-label="Assessment process">
-        <Step number="1" label="Verify target" active={!target.verified} complete={target.verified} />
-        <Step number="2" label="Give consent" active={target.verified && !target.consented} complete={target.consented} />
-        <Step number="3" label="Review fixes" active={scanState === "running"} complete={scanState === "complete"} />
-      </section>
-
-      {scanState !== "complete" ? (
-        <section className="onboarding-grid">
-          <div className="card setup-card">
-            <div className="card-heading"><p className="eyebrow">Secure setup</p><h2>Verify a website you own</h2><p>CyberSure scans only explicitly verified domains. No third-party targets, credential attacks, or exploitation.</p></div>
-            <label htmlFor="target-url">Website address</label>
-            <div className="input-row"><input id="target-url" value={target.url} onChange={(event) => setTarget({ ...target, url: event.target.value })} placeholder="https://yourbusiness.in" /><button className="primary" onClick={generateVerification}>Generate token</button></div>
-            {target.token && <div className="token-box"><div><span className="token-label">DNS TXT value or file content</span><code>{target.token}</code><small>Place the token at <strong>/.well-known/cybersure-verification.txt</strong> or add it as a DNS TXT record.</small></div><button className="outline" onClick={confirmVerification}>I added it</button></div>}
-            {target.verified && <div className="verified-row">✓ <strong>{target.hostname}</strong> verified for scanning</div>}
-            <label className="consent-row"><input type="checkbox" checked={target.consented} disabled={!target.verified} onChange={(event) => setTarget({ ...target, consented: event.target.checked })} /><span>I own or am authorised to assess this target. I consent to time-bounded, low-impact HTTPS checks only.</span></label>
-            <button className="primary wide" onClick={runScan} disabled={!target.verified || !target.consented || scanState === "running"}>{scanState === "running" ? "Checking your website…" : "Start security health check"}</button>
-            {notice && <p className="notice" role="status">{notice}</p>}
+    <div
+      style={{
+        background: "var(--color-surface-container-lowest)",
+        border: "1px solid var(--color-outline-variant)",
+        borderRadius: "var(--radius-xl)",
+        boxShadow: "var(--shadow-raised)",
+        padding: "var(--spacing-xl)",
+        width: "100%",
+        maxWidth: "400px",
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--spacing-xl)",
+        transition: "border-color 0.3s",
+      }}
+      onMouseEnter={(e) => ((e.currentTarget as HTMLDivElement).style.borderColor = "var(--color-primary)")}
+      onMouseLeave={(e) => ((e.currentTarget as HTMLDivElement).style.borderColor = "var(--color-outline-variant)")}
+    >
+      {/* Gauge */}
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "var(--spacing-sm)" }}>
+        <div style={{ position: "relative", width: "128px", height: "128px" }}>
+          <svg className="score-ring" viewBox="0 0 100 100" style={{ width: "100%", height: "100%" }}>
+            <circle cx="50" cy="50" r={radius} fill="none" stroke="var(--color-surface-variant)" strokeWidth="8" />
+            <circle
+              cx="50" cy="50" r={radius} fill="none"
+              stroke="var(--color-primary-container)"
+              strokeWidth="8"
+              strokeLinecap="round"
+              strokeDasharray={circumference}
+              strokeDashoffset={offset}
+            />
+          </svg>
+          <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+            <span className="text-headline-md" style={{ color: "var(--color-on-surface)" }}>
+              {score}<span className="text-body-md" style={{ color: "var(--color-secondary)" }}>/100</span>
+            </span>
           </div>
-          <aside className="card scope-card"><p className="eyebrow">What we check</p><h3>Helpful, not intrusive.</h3><ul><li>HTTPS certificate and secure connection</li><li>Browser security headers</li><li>Cookie protection settings</li><li>Mixed HTTP page resources</li><li>Safe, fixed debug indicators</li></ul><div className="scope-exclusion"><strong>Not included</strong><br />Exploitation, passwords, brute force, crawling, or scanning targets you have not verified.</div></aside>
-        </section>
-      ) : (
-        <section className="dashboard">
-          <section className="score-grid">
-            <div className="card score-card"><p className="eyebrow">Security health score</p><div className="score-line"><strong>{score}</strong><span>/100</span></div><div className="score-meter"><i style={{ width: `${score}%` }} /></div><p>{scoreLabel(score)} · {findings.filter((finding) => finding.status === "Open").length} actions remain</p></div>
-            <div className="card summary-card"><p className="eyebrow">Scan summary</p><h2>{target.hostname}</h2><p>Low-impact assessment completed just now.</p><div className="severity-row">{severityOrder.map((severity) => <span key={severity} className={`severity ${severity.toLowerCase()}`}><b>{severityCount(findings, severity)}</b> {severity}</span>)}</div></div>
-            <div className="card rescan-card"><p className="eyebrow">Ready when you are</p><h3>Fixed something?</h3><p>Mark it fixed and run a re-scan to verify the change.</p><button className="outline" onClick={runScan}>Re-scan target</button></div>
-          </section>
+        </div>
+        <span className="chip chip-medium">Needs Attention</span>
+      </div>
 
-          <section className="findings-layout">
-            <div className="card finding-list"><div className="section-title"><div><p className="eyebrow">Prioritised fixes</p><h2>Fix first</h2></div><span>{findings.filter((finding) => finding.status === "Open").length} open</span></div>{findings.map((finding) => <button key={finding.id} className={`finding-item ${activeFinding === finding.id ? "active" : ""}`} onClick={() => setActiveFinding(finding.id)}><span className={`severity-dot ${finding.severity.toLowerCase()}`} /><span className="finding-item-copy"><b>{finding.title}</b><small>{finding.category} · {finding.effort}</small></span><span className={finding.status === "Open" ? "open-status" : "fixed-status"}>{finding.status}</span></button>)}</div>
-            {selected && <FindingPanel finding={selected} language={language} onToggle={() => updateFinding(selected.id)} />}
-          </section>
-          {notice && <p className="notice dashboard-notice" role="status">{notice}</p>}
-        </section>
-      )}
-    </main>
+      <hr style={{ border: "none", borderTop: "1px solid var(--color-outline-variant)", opacity: 0.5 }} />
+
+      {/* Mini finding rows */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-sm)" }}>
+        {[
+          { icon: "warning",      label: "Outdated CMS",       chip: "High",    chipClass: "chip-high" },
+          { icon: "info",         label: "Missing Headers",    chip: "Med",     chipClass: "chip-medium" },
+          { icon: "check_circle", label: "SSL Valid",          chip: "Healthy", chipClass: "chip-healthy" },
+        ].map(({ icon, label, chip, chipClass }) => (
+          <div
+            key={label}
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: "10px 12px",
+              background: "var(--color-surface-container-low)",
+              borderRadius: "var(--radius-md)",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-sm)" }}>
+              <span className="material-symbols-outlined" style={{ fontSize: "18px", color: chipClass === "chip-high" ? "var(--color-error)" : chipClass === "chip-medium" ? "var(--color-risk)" : "var(--color-primary)" }}>{icon}</span>
+              <span className="text-label-sm" style={{ color: "var(--color-on-surface)" }}>{label}</span>
+            </div>
+            <span className={`chip ${chipClass}`}>{chip}</span>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
-function Step({ number, label, active, complete }: { number: string; label: string; active: boolean; complete: boolean }) {
-  return <div className={`step ${active ? "active" : ""} ${complete ? "complete" : ""}`}><span>{complete ? "✓" : number}</span>{label}</div>;
+/* ── Benefit card ── */
+function BenefitCard({ icon, title, body }: { icon: string; title: string; body: string }) {
+  return (
+    <div
+      className="card"
+      style={{ padding: "var(--spacing-xl)", display: "flex", flexDirection: "column", gap: "var(--spacing-md)" }}
+    >
+      <div style={{
+        width: "48px", height: "48px", borderRadius: "var(--radius-full)",
+        background: "var(--color-surface-container)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        color: "var(--color-primary-container)",
+      }}>
+        <span className="material-symbols-outlined" style={{ fontSize: "24px" }}>{icon}</span>
+      </div>
+      <h3 className="text-headline-md" style={{ margin: 0, color: "var(--color-on-surface)" }}>{title}</h3>
+      <p className="text-body-md" style={{ margin: 0, color: "var(--color-on-surface-variant)" }}>{body}</p>
+    </div>
+  );
 }
 
-function FindingPanel({ finding, language, onToggle }: { finding: Finding; language: Language; onToggle: () => void }) {
-  return <article className="card finding-panel">
-    <div className="finding-panel-top"><span className={`severity-tag ${finding.severity.toLowerCase()}`}>{finding.severity}</span><span className="effort">Estimated effort: {finding.effort}</span></div>
-    <p className="eyebrow">{finding.category}</p><h2>{finding.title}</h2>
-    <div className="owner-view"><span>For the business owner · {language}</span><p>{finding.owner[language]}</p></div>
-    <div className="developer-view"><span>For the developer</span><p>{finding.developer}</p><code>{finding.evidence}</code></div>
-    <div className="panel-footer"><span className={finding.status === "Open" ? "open-status" : "fixed-status"}>{finding.status === "Open" ? "Needs action" : "Marked fixed"}</span><button className={finding.status === "Open" ? "primary" : "outline"} onClick={onToggle}>{finding.status === "Open" ? "Mark fixed" : "Reopen finding"}</button></div>
-  </article>;
+export default function LandingPage() {
+  return (
+    <>
+      <TopBar />
+
+      <main style={{ flex: 1 }}>
+        {/* ── Hero ── */}
+        <section style={{ padding: "64px var(--margin-mobile) 48px" }}>
+          <div
+            style={{
+              maxWidth: "var(--container-max)",
+              marginInline: "auto",
+              display: "grid",
+              gridTemplateColumns: "1fr",
+              gap: "var(--spacing-xl)",
+              alignItems: "center",
+            }}
+            className="hero-grid"
+          >
+            {/* Copy */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-xl)", zIndex: 1 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-md)" }}>
+                <h1 className="text-display" style={{ margin: 0, color: "var(--color-on-surface)" }}>
+                  Know what is exposed.<br />
+                  <span style={{ color: "var(--color-primary-container)" }}>Fix what matters first.</span>
+                </h1>
+                <p className="text-body-lg" style={{ margin: 0, color: "var(--color-on-surface-variant)", maxWidth: "500px" }}>
+                  Vyapar Shield turns confusing website security risks into a verified, prioritised action plan for small businesses.
+                </p>
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--spacing-md)", alignItems: "center" }}>
+                <Link href="/auth" className="btn btn-primary" style={{ padding: "12px 32px" }}>
+                  Start free security check
+                </Link>
+                <Link href="#how" className="btn btn-secondary" style={{ padding: "12px 32px" }}>
+                  See how it works
+                </Link>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-sm)", color: "var(--color-secondary)" }}>
+                <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>verified_user</span>
+                <span className="text-label-sm">Consent-gated, low-impact scans only</span>
+              </div>
+            </div>
+
+            {/* Score preview widget */}
+            <div style={{ display: "flex", justifyContent: "center", position: "relative" }}>
+              <div style={{
+                position: "absolute", inset: 0,
+                background: "linear-gradient(135deg, var(--color-surface-container), var(--color-surface-container-low))",
+                borderRadius: "24px", opacity: 0.5, transform: "rotate(3deg) scale(1.05)", zIndex: 0,
+              }} />
+              <HeroScoreWidget />
+            </div>
+          </div>
+        </section>
+
+        {/* ── Benefits ── */}
+        <section id="how" style={{ background: "var(--color-surface-container-low)", borderTop: "1px solid var(--color-outline-variant)", borderBottom: "1px solid var(--color-outline-variant)", padding: "80px var(--margin-mobile)" }}>
+          <div style={{ maxWidth: "var(--container-max)", marginInline: "auto" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "var(--spacing-lg)" }}>
+              <BenefitCard icon="verified" title="Verify before scanning" body="We strictly ensure you only scan domains your business owns, maintaining safe and legal boundaries." />
+              <BenefitCard icon="lightbulb" title="Simple fixes first" body="Clear, jargon-free actionable steps prioritized for business owners to protect their assets efficiently." />
+              <BenefitCard icon="code_blocks" title="Developer-ready evidence" body="Technical guidance and reports that you can hand straight to your IT team for immediate resolution." />
+            </div>
+          </div>
+        </section>
+
+        {/* ── Localisation / Language ── */}
+        <section style={{ padding: "80px var(--margin-mobile)", textAlign: "center" }}>
+          <div style={{ maxWidth: "600px", marginInline: "auto", display: "flex", flexDirection: "column", alignItems: "center", gap: "var(--spacing-lg)" }}>
+            <h2 className="text-headline-lg" style={{ margin: 0, color: "var(--color-on-surface)" }}>Built for Indian MSMEs</h2>
+            <p className="text-body-md" style={{ margin: 0, color: "var(--color-secondary)" }}>
+              Security that speaks your language and understands your business scale.
+            </p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--spacing-sm)", justifyContent: "center" }}>
+              {["English", "Hindi (हिंदी)", "Hinglish"].map((lang) => (
+                <span
+                  key={lang}
+                  style={{
+                    padding: "8px 18px",
+                    background: "var(--color-surface-container)",
+                    color: "var(--color-primary-container)",
+                    borderRadius: "var(--radius-full)",
+                    border: "1px solid var(--color-outline-variant)",
+                    fontSize: "13px",
+                    fontWeight: 500,
+                  }}
+                >
+                  {lang}
+                </span>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── CTA Banner ── */}
+        <section style={{
+          background: "var(--color-primary-container)",
+          padding: "56px var(--margin-mobile)",
+          textAlign: "center",
+        }}>
+          <div style={{ maxWidth: "640px", marginInline: "auto", display: "flex", flexDirection: "column", gap: "var(--spacing-lg)", alignItems: "center" }}>
+            <h2 className="text-headline-lg" style={{ margin: 0, color: "var(--color-on-primary)" }}>
+              Ready to secure your business?
+            </h2>
+            <p className="text-body-lg" style={{ margin: 0, color: "rgba(255,255,255,0.85)" }}>
+              Run your first free scan in under 5 minutes. No credit card required.
+            </p>
+            <Link
+              href="/auth"
+              className="btn"
+              style={{
+                background: "var(--color-surface-container-lowest)",
+                color: "var(--color-primary)",
+                padding: "14px 36px",
+                fontSize: "15px",
+                fontWeight: 700,
+                boxShadow: "0 4px 24px rgba(0,0,0,0.12)",
+              }}
+            >
+              Get started — it&apos;s free
+            </Link>
+          </div>
+        </section>
+      </main>
+
+      <Footer />
+
+      <style>{`
+        @media (min-width: 1024px) {
+          .hero-grid { grid-template-columns: 1fr 1fr !important; padding-inline: var(--margin-desktop); }
+        }
+        @media (min-width: 768px) {
+          section { padding-inline: var(--margin-desktop) !important; }
+        }
+      `}</style>
+    </>
+  );
 }

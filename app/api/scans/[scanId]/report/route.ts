@@ -18,7 +18,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   if (targetError || findingsError || !target) return databaseError(targetError?.message ?? findingsError?.message ?? "Report data is unavailable.");
   return NextResponse.json({
     report: {
-      title: "CyberSure MSME — Security Health Check",
+      title: "Vyapar Shield — Security Health Check",
       target,
       score: scan.score,
       completedAt: scan.completed_at,

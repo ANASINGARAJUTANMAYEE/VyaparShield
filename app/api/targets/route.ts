@@ -28,6 +28,15 @@ export async function POST(request: NextRequest) {
   if (!parsed.success) return validationError(parsed.error);
   const validated = validateTargetUrl(parsed.data.url);
   if (!validated.valid) return NextResponse.json({ error: validated.reason }, { status: 400 });
+  // LOOP-4 fix: verify the current user is a member of the requested business.
+  const { data: membership, error: membershipCheckError } = await result.supabase
+    .from("business_members")
+    .select("role")
+    .eq("business_id", parsed.data.businessId)
+    .eq("user_id", result.user.id)
+    .maybeSingle();
+  if (membershipCheckError) return databaseError(membershipCheckError.message);
+  if (!membership) return NextResponse.json({ error: "You are not a member of this business." }, { status: 403 });
   const token = createVerificationToken();
   const { data: target, error } = await result.supabase.from("targets").insert({
     business_id: parsed.data.businessId,

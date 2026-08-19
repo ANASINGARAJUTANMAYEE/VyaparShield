@@ -98,6 +98,8 @@ export function severityCount(findings: Finding[], severity: Severity): number {
 
 export function scoreLabel(score: number): string {
   if (score >= 85) return "Strong baseline";
-  if (score >= 65) return "Needs attention";
-  return "Fix urgent risks";
+  if (score >= 70) return "Needs attention";
+  if (score >= 50) return "High risk";
+  if (score >= 30) return "Fix urgent risks";
+  return "Critical — act now";
 }

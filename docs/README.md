@@ -1,4 +1,4 @@
-# CyberSure MSME documentation
+# Vyapar Shield documentation
 
 | Document | Purpose |
 |---|---|
@@ -8,3 +8,4 @@
 | [PROJECT_DETAILS.md](./PROJECT_DETAILS.md) | Product overview, users, value proposition, and current build status |
 
 The root [IMPLEMENTATION_PLAN.md](../IMPLEMENTATION_PLAN.md) remains as the original planning document.
+

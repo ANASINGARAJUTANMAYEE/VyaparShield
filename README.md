@@ -240,7 +240,7 @@ REDIS_URL=redis://localhost:6379
 
 In your Supabase SQL Editor, run these migrations in order:
 
-1. [`0001_cybersure_schema.sql`](./supabase/migrations/0001_cybersure_schema.sql)
+1. [`0001_Vyapar Shield_schema.sql`](./supabase/migrations/0001_Vyapar Shield_schema.sql)
 2. [`0002_scan_worker_claim.sql`](./supabase/migrations/0002_scan_worker_claim.sql)
 
 Then add your local deployment address and production address to Supabase Auth redirect URLs, including:

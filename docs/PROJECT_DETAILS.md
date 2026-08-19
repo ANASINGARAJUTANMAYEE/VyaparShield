@@ -1,8 +1,8 @@
-# CyberSure MSME — Project details
+# Vyapar Shield — Project details
 
 ## Elevator pitch
 
-CyberSure MSME gives Indian small businesses a safe, affordable cybersecurity health check. It assesses only verified assets with explicit consent and translates results into the next action an owner or developer should take.
+Vyapar Shield gives Indian small businesses a safe, affordable cybersecurity health check. It assesses only verified assets with explicit consent and translates results into the next action an owner or developer should take.
 
 ## Challenge alignment
 
@@ -12,7 +12,7 @@ CyberSure MSME gives Indian small businesses a safe, affordable cybersecurity he
 
 ## Primary scenario
 
-Sakshi owns KiranaKart, a small online store managed by a freelance developer. The business handles contact details and payments, but Sakshi cannot interpret TLS settings, headers, cookies, or exposed test configuration. CyberSure verifies her staging domain, obtains consent, runs safe checks, explains priority fixes in Hinglish, and produces a developer-ready remediation list. After a fix, a re-scan confirms what improved.
+Sakshi owns KiranaKart, a small online store managed by a freelance developer. The business handles contact details and payments, but Sakshi cannot interpret TLS settings, headers, cookies, or exposed test configuration. Vyapar Shield verifies her staging domain, obtains consent, runs safe checks, explains priority fixes in Hinglish, and produces a developer-ready remediation list. After a fix, a re-scan confirms what improved.
 
 ## Value proposition
 
@@ -52,7 +52,7 @@ docs/                product, design, feasibility, and implementation documentat
 
 ## Responsible-security statement
 
-CyberSure is not an exploit platform. It does not attempt passwords, brute force, exploitation, recursive crawling, subdomain enumeration, port scans, or targets without verified ownership. Its production worker must run independently of the web app and use strict outbound controls.
+Vyapar Shield is not an exploit platform. It does not attempt passwords, brute force, exploitation, recursive crawling, subdomain enumeration, port scans, or targets without verified ownership. Its production worker must run independently of the web app and use strict outbound controls.
 
 ## Demo narrative
 
@@ -67,3 +67,4 @@ CyberSure is not an exploit platform. It does not attempt passwords, brute force
 ## Current project state
 
 The repository contains a buildable application prototype and backend foundation. Automated tests, lint, and production build currently pass. A Supabase project and an egress-controlled real scan executor remain deployment prerequisites.
+
